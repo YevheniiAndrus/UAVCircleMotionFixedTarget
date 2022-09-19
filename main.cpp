@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
 #include <iostream>
 #include <cmath>
 
@@ -61,7 +62,8 @@ int main(){
     double r_ref = 30;
     double K = 1.0;
 
-    for(int i = 0; i < 1000; ++i){
+    cv::VideoWriter video("output.avi", cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 10, cv::Size(img_width, img_height));
+    for(int i = 0; i < 400; ++i){
         target_to_uav_angle = std::atan2(cartesian_uav.x - cartesian_target.x, cartesian_uav.y - cartesian_target.y);
         n_angle = bearing_angle(phi, target_to_uav_angle);
 
@@ -76,6 +78,13 @@ int main(){
 
         cv::circle(blank, cartesian_to_opencv(cartesian_uav, img_width, img_height), 2, cv::Scalar(0, 255, 0), 2, cv::LineTypes::FILLED);
 
+        // make frame and put to video sequence
+        cv::Mat frame = cv::Mat(cv::Size(img_width, img_height), CV_8UC3, cv::Scalar(255, 255, 255));
+        draw_cartesian(frame, img_width, img_height);
+        cv::circle(frame, cartesian_to_opencv(cartesian_uav, img_width, img_height), 2, cv::Scalar(0, 255, 0), 2, cv::LineTypes::FILLED);
+        cv::circle(frame, cartesian_to_opencv(cartesian_target, img_width, img_height), 2, cv::Scalar(0, 0, 255), 2, cv::LineTypes::FILLED);
+
+        video.write(frame);
     }
 
     cv::imshow("UAV", blank);
